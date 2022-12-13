@@ -73,17 +73,11 @@ class _DownloadItemScreenState extends State<DownloadItemScreen> {
                     stream: DownloadManager.instance.getMovieDownloadProgress(widget.movie),
                     builder: (context, snapshot) {
                       double? progress = snapshot.data;
-                      if (progress == null) {
-                        return const Text(
-                          "Error",
-                          style: TextStyle(color: Colors.red),
-                        );
-                      }
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "$progress%",
+                            "${((progress ?? 0) * 100).toInt()}%",
                             style: const TextStyle(
                               color: Colors.grey,
                               fontWeight: FontWeight.bold,

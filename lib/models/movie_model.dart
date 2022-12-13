@@ -43,13 +43,35 @@ class MovieModel {
       };
 
   static String encode(List<MovieModel> movies) => json.encode(
-        movies
-            .map<Map<String, dynamic>>((movies) => MovieModel.toMap(movies))
-            .toList(),
+        movies.map<Map<String, dynamic>>((movies) => MovieModel.toMap(movies)).toList(),
       );
 
-  static List<MovieModel> decode(String movies) =>
-      (json.decode(movies) as List<dynamic>)
-          .map<MovieModel>((item) => MovieModel.fromJson(item))
-          .toList();
+  static List<MovieModel> decode(String movies) => (json.decode(movies) as List<dynamic>)
+      .map<MovieModel>((item) => MovieModel.fromJson(item))
+      .toList();
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is MovieModel &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          name == other.name &&
+          year == other.year &&
+          rating == other.rating &&
+          title == other.title &&
+          imgUrl == other.imgUrl &&
+          videoUrl == other.videoUrl &&
+          path == other.path;
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      name.hashCode ^
+      year.hashCode ^
+      rating.hashCode ^
+      title.hashCode ^
+      imgUrl.hashCode ^
+      videoUrl.hashCode ^
+      path.hashCode;
 }

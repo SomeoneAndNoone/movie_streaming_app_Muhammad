@@ -28,12 +28,12 @@ class _DownloadPageState extends State<DownloadPage> {
       body: StreamBuilder<int>(
           stream: DownloadManager.instance.onUpdate.stream,
           builder: (context, snapshot) {
+            log('Progress updated: movie length: ${DownloadManager.instance.movies.length}');
             return CustomScrollView(
               slivers: [
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (BuildContext context, int index) {
-                      log('Progress updated: ${DownloadManager.instance.movies.length}');
                       return DownloadItemScreen(
                         movie: DownloadManager.instance.movies[index],
                       );

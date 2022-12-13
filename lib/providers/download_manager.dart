@@ -12,26 +12,26 @@ import 'package:rxdart/rxdart.dart';
 
 class DownloadManager with ChangeNotifier {
   static final Dio dio = Dio();
-  static const _MOVIE_FOLDER = 'movies';
-
-  static DownloadManager? _instance;
-
-  static DownloadManager get instance => _instance ?? DownloadManager._();
+  static const MOVIE_FOLDER = 'movies';
 
   DownloadManager._();
 
+  static DownloadManager? _instance;
+
+  static DownloadManager get instance => _instance ??= DownloadManager._();
+
+  List<MovieModel> get movies => _downloadingMovies;
+
   final List<MovieModel> _downloadingMovies = [];
 
-  final HashMap<String, PublishSubject<double>> _movieProgress = HashMap();
+  final HashMap<String, BehaviorSubject<double>> _movieProgress = HashMap();
   BehaviorSubject<int> onUpdate = BehaviorSubject();
 
   Stream<double>? getMovieDownloadProgress(MovieModel movie) => _movieProgress[movie.id];
 
-  List<MovieModel> get movies => _downloadingMovies;
-
   Future<Directory> _getMovieDirectory() async {
     log("Directory initialized");
-    Directory movieDirectory = Directory(join((await getTemporaryDirectory()).path, _MOVIE_FOLDER));
+    Directory movieDirectory = Directory(join((await getTemporaryDirectory()).path, MOVIE_FOLDER));
     movieDirectory.createSync();
     return movieDirectory;
   }
@@ -56,30 +56,23 @@ class DownloadManager with ChangeNotifier {
     Directory movieDirectory = await _getMovieDirectory();
 
     _downloadingMovies.add(movie);
-    log('New movie added. movie count = ${movies.length}');
-    onUpdate.add(math.Random().nextInt(100000000));
-
-    File movieFile = File(join(movieDirectory.path, movie.id.toString()));
+    log('New movie added. movie count = ${_downloadingMovies.length}');
+    onUpdate.add(math.Random().nextInt(100000));
+    File movieFile = File(join(movieDirectory.path, movie.id));
     if (movieFile.existsSync()) {
       movieFile.deleteSync();
     }
     movieFile.createSync();
 
-    _movieProgress[movie.id] = PublishSubject();
-    _movieProgress[movie.id]?.add(12);
-    // dio.download(movie.videoUrl, movieFile.path, onReceiveProgress: (cur, fileLength) {
-    //   _movieProgress[movie.id]?.add(cur / fileLength);
-    //   log('Download in progress: ${movie.name}: ${cur * 1.0 / fileLength}');
-    //   if (cur >= fileLength) {
-    //     _movieProgress[movie.id]?.close();
-    //     _movieProgress.remove(movie.id);
-    //   }
-    // });
+    _movieProgress[movie.id] = BehaviorSubject();
+    dio.download(movie.videoUrl, movieFile.path, onReceiveProgress: (count, total) {
+      _movieProgress[movie.id]?.add(count / total);
+      log('Download in progress: ${movie.name}: ${count * 1.0 / total}');
+      if (count + 1 >= total) {
+        _movieProgress[movie.id]?.close();
+        _movieProgress.remove(movie.id);
+        _downloadingMovies.remove(movie);
+      }
+    });
   }
-
-  // Future<bool> saveVideo(String url, String fileName) async {}
-
-// 1232_finish_234234242342
-//   ${context.watch<Counter>().count()   => view variable
-// context.read<Counter>().increment(),
 }
